@@ -58,7 +58,11 @@ module ValidatesTimeliness
         errors = []
         callstack.each do |name, values_with_empty_parameters|
           begin
-            send(name + "=", read_value_from_parameter(name, values_with_empty_parameters))
+            if ValidatesTimeliness.require_all_date_fields && values.size < 3
+              send(name + "=", nil)
+            else
+              send(name + "=", read_value_from_parameter(name, values_with_empty_parameters))
+            end
           rescue => ex
             values = values_with_empty_parameters.is_a?(Hash) ? values_with_empty_parameters.values : values_with_empty_parameters 
             errors << ActiveRecord::AttributeAssignmentError.new("error on assignment #{values.inspect} to #{name}", ex, name)
